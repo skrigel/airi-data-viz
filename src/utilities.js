@@ -49,7 +49,7 @@ function convertToJSON(res) {
 
 export function get(endpoint, params = {}) {
   const fullPath =
-    "http://localhost:3000" + endpoint + "?" + formatParams(params);
+    "http://localhost:10000" + endpoint + "?" + formatParams(params);
   console.log("Making GET request to:", fullPath); // Log the full request URL
 
   return fetch(fullPath)
