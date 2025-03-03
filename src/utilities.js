@@ -35,21 +35,9 @@ function convertToJSON(res) {
     });
 }
 
-// Helper code to make a get request. Default parameter of empty JSON Object for params.
-// Returns a Promise to a JSON Object.
-// export function get(endpoint, params = {}) {
-//   const fullPath = endpoint + "?" + formatParams(params);
-//   return fetch(fullPath)
-//     .then(convertToJSON)
-//     .catch((error) => {
-//       // give a useful error message
-//       throw `GET request to ${fullPath} failed with error:\n${error}`;
-//     });
-// }
-
 export function get(endpoint, params = {}) {
   const fullPath =
-    "https://airi-data-viz.onrender.com" +
+    "http://localhost:3000" +
     endpoint +
     "?" +
     formatParams(params);

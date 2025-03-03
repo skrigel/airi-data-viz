@@ -11,149 +11,69 @@ function App() {
   // const [risks, setRisks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   get("/api/risks")
-  //     .then((data) => {
-  //       setRisks(data);
-  //       console.log("📊 Risks data received:", data);
-  //     })
-  //     .catch((error) => console.error("❌ Error fetching risks:", error))
-  //     .finally(() => setLoading(false));
-  // }, []);
-
-  // const [loading, setLoading] = useState(true);
-  // const [risks, setRisks] = useState([]);
-  // const [filters, setFilters] = useState({
-  //   domain: "",
-  //   subdomain: "",
-  //   entity: "",
-  //   intent: "",
-  //   timing: "",
-  // });
-  // const [filterOptions, setFilterOptions] = useState({
-  //   domains: [],
-  //   subdomains: [],
-  //   entities: [],
-  //   intents: [],
-  //   timings: [],
-  // });
-  // const [heatmapData, setHeatmapData] = useState([]);
-  // const [domainData, setDomainData] = useState([]);
-  // const [subdomainData, setSubdomainData] = useState([]);
-
-  // // Fetch filter options on component mount
-  // // useEffect(() => {
-  // //   const fetchFilterOptions = async () => {
-  // //     try {
-  // //       const response = await axios.get(`${API_BASE_URL}/filters`);
-  // //       setFilterOptions(response.data);
-  // //     } catch (error) {
-  // //       console.error("Error fetching filter options:", error);
-  // //     }
-  // //   };
-
-  // //   fetchFilterOptions();
-  // // }, []);
-
-  // // // Fetch data based on current filters
-  // // useEffect(() => {
-  // //   const fetchData = async () => {
-  // //     setLoading(true);
-  // //     try {
-  // //       // Fetch filtered risks
-  // //       const risksResponse = await axios
-  // //         .get(`/api/risks`, {})
-  // //         .then((risks) => setRisks(risks));
-
-  // //       console.log("risks", risks);
-
-  // //       // Fetch heatmap data
-  // //       // const heatmapResponse = await axios.get(`api/aggregation/heatmap`);
-  // //       // console.log(heatmapResponse);
-  // //       // setHeatmapData(heatmapResponse.data);
-
-  // //       // // Fetch domain aggregation
-  // //       // const domainResponse = await axios.get(
-  // //       //   `${API_BASE_URL}/aggregation/domain`
-  // //       // );
-  // //       // setDomainData(domainResponse.data);
-
-  // //       // Fetch subdomain breakdown
-  // //       // const subdomainResponse = await axios.get(
-  // //       //   `${API_BASE_URL}/aggregation/subdomain`,
-  // //       //   {
-  // //       //     params: { domain: filters.domain },
-  // //       //   }
-  // //       // );
-  // //       // setSubdomainData(subdomainResponse.data);
-  // //     } catch (error) {
-  // //       console.error("Error fetching data:", error);
-  // //     } finally {
-  // //       setLoading(false);
-  // //     }
-  // //   };
-
-  // //   fetchData();
-  // // }, [filters]);
-  // useEffect(() => {
-  //   get("/api/risks").then((risks) => {
-  //     setRisks(risks);
-  //   });
-  //   console.log(risks);
-  // }, []);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const risksResponse = await axios.get("risks");
-  //       console.log("Risks response:", risksResponse.data);
-  //       setRisks(risksResponse.data);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [filters]);
-
-  // const handleFilterChange = (name, value) => {
-  //   setFilters((prev) => ({
-  //     ...prev,
-  //     [name]: value,
-  //   }));
-  // };
-
-  // const resetFilters = () => {
-  //   setFilters({
-  //     domain: "",
-  //     subdomain: "",
-  //     entity: "",
-  //     intent: "",
-  //     timing: "",
-  //   });
-  // };
+  const [timingData, setTimingData] = useState([])
   const [heatmapData, setHeatmapData] = useState([]);
   const [domainData, setDomainData] = useState([]);
   const [subdomainData, setSubdomainData] = useState([]);
+
+  // const [loading, setLoading] = useState(true);
+  // const [risks, setRisks] = useState([]);
+
+  const [filters, setFilters] = useState({
+    domains: [],
+    subdomains: [],
+    entities: [],
+    intents: [],
+    timings: [],
+  });
+
+  // Handle filter change
+  const handleFilterChange = (type, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [type]: value,
+    }));
+  };
+
+  // Reset all filters
+  //REMINDER: CANT SET subdomain filters if domain filter isn't set
+  const resetFilters = () => {
+    setFilters({
+      domain: [],
+      subdomain: [],
+      entity: [],
+      intent: [],
+      timing: [],
+    });
+  };
+
 
   useEffect(() => {
     get("/api/risks")
       .then((data) => {
         console.log("📊 API Data Received:", data);
 
-        const heatmap = data.map((item) => ({
+        const subData = data.map((item) => ({
           domain: item.Domain?.trim(),
           subdomain: item["Sub-domain"]?.trim(),
           riskCategory: item["Risk category"]?.trim(),
           riskSubcategory: item["Risk subcategory"]?.trim(),
         }));
 
-        console.log("🔥 Heatmap Data Before Setting State:", heatmap); // Check transformed data
+        console.log("🔥 Heatmap Data Before Setting State:", subData); // Check transformed data
 
-        setHeatmapData(heatmap);
+        setSubdomainData(subData);
+
+        const timeData = data.map((item) => ({
+          domain: item.Domain?.trim() ,
+          subdomain: item["Sub-domain"]?.trim(),
+          timing: item["Timing"]?.trim()
+        }));
+
+        setTimingData(timeData);
+
+        console.log(timeData)
+        
         // // Transform data into heatmapData structure
         // const heatmap = data.map((item) => ({
         //   domain: item["Domain"] || "Unknown",
@@ -198,13 +118,14 @@ function App() {
     return <p>Loading...</p>; // Replace with <LoadingSpinner /> if needed
   }
 
+  // GOAL: filters, pie chart for causal, bar chart for just domain frequency, 
+
   return (
     <div className="app">
       <header className="app-header">
         <h1>AI Risk Database Dashboard</h1>
       </header>
       <main className="app-content">
-        <h2>Causal Breakdown (Pie Chart Data)</h2>
 
         {/* <FilterPanel
           filters={filters}
@@ -214,9 +135,8 @@ function App() {
         /> */}
         <Dashboard
           loading={true}
-          heatmapData={heatmapData}
-          domainData={[]}
-          subdomainData={[]}
+          domainData={subdomainData}
+          timingData={timingData}
         />
         {/* <RiskTable risks={risks} loading={loading} /> */}
       </main>

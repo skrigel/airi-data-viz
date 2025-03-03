@@ -1,27 +1,21 @@
 // components/Dashboard.js - Main visualization dashboard
 
-import React from "react";
+// import React, {Box, Container, Row, Column} from "react";
 import HeatmapChart from "./HeatMapChart";
-// import DomainBarChart from "./DomainBarChart";
-import CausalDonutChart from "./CausalDonutChart";
-// import SubdomainTreemap from "./charts/SubdomainTreemap";
+import DomainBarChart from "./DomainBarChart";
 // import LoadingSpinner from "./LoadingSpinner";
 // import "./Dashboard.css";
-import DrilldownPieChart from "./DrillDownPieChart";
+import DrilldownPieChart from "./DomainPieChart";
+import {Box, Container} from "@mui/material"
 
-const Dashboard = ({ loading, heatmapData, domainData, subdomainData }) => {
-  //   if (loading) {
-  //     return <LoadingSpinner />;
-  //   }
-
-  // Calculate causality breakdown across all domains
+const aggregateDataCounts = (domainData, sublabel) =>{
   const domainBreakdown = {};
 
   // Iterate through each row in heatmapData
-  heatmapData.forEach((item) => {
+  domainData.forEach((item) => {
     const domain = item["domain"].trim() === "" ? "Unlabeled" : item["domain"];
     const subdomain =
-      item["subdomain"].trim() === "" ? "Unlabeled" : item["subdomain"];
+      item[sublabel].trim() === "" ? "Unlabeled" : item[sublabel];
 
     // Initialize the domain entry if not already present
     if (!domainBreakdown[domain]) {
@@ -36,40 +30,64 @@ const Dashboard = ({ loading, heatmapData, domainData, subdomainData }) => {
     // Increment the subdomain count
     domainBreakdown[domain][subdomain] += 1;
   });
+  
+  return domainBreakdown;
+}
+
+const Dashboard = ({ loading, domainData, timingData }) => {
+ 
+  
+  const domainBreakdownBySubdomain = aggregateDataCounts(domainData, "subdomain");
+
+  const domainBreakdownByTiming = aggregateDataCounts(timingData, "timing")
+
+  console.log("timing", domainBreakdownByTiming);
+
 
   // Convert into a format suitable for visualization
-  const pieData = Object.keys(domainBreakdown).flatMap((domain) =>
-    Object.keys(domainBreakdown[domain]).map((subdomain) => ({
+
+  const timingCategories = Array.from(
+    new Set(Object.values(domainBreakdownByTiming).flatMap(Object.keys))
+  );
+  
+  // 🔹 Process data dynamically  
+  const barData  = Object.keys(domainBreakdownByTiming)
+    .filter((domain) => domain !== "Unlabeled") // Exclude "Unlabeled"
+    .map((domain) => {
+      let entry = { domain: domain };
+      timingCategories.forEach((category) => {
+        // Remove numbering prefix and default to 0 if missing
+        entry[category.replace(/^\d+ - /, "")] = domainBreakdownByTiming[domain][category] || 0;
+      });
+      return entry;
+    });
+  
+
+  console.log('bar', barData);
+
+  const pieData = Object.keys(domainBreakdownBySubdomain).flatMap((domain) =>
+    Object.keys(domainBreakdownBySubdomain[domain]).map((subdomain) => ({
       label: domain,
       subdomain: subdomain,
-      value: domainBreakdown[domain][subdomain],
+      value: domainBreakdownBySubdomain[domain][subdomain],
     }))
   );
 
   console.log("📊 Pie Chart Data (Domain → Subdomains):", pieData);
 
-  console.log("📊 Pie Chart Data:", pieData);
-
   return (
-    <div className="dashboard">
-      {/* <div className="dashboard-row">
-        <div className="dashboard-card large">
-          <h2>Domain × Causal Factor Heatmap</h2>
-          <HeatmapChart data={heatmapData} />
-        </div>
-      </div> */}
+    <Container>
 
-      <div className="dashboard-row">
-        {/* <div className="dashboard-card">
-          <h2>Risk Frequency by Domain</h2>
-          <DomainBarChart data={domainData} />
-        </div> */}
+      {/* <FilterBar></FilterBar> */}
+      <Box>
+        <h2>Timing By Domain</h2>
+      <DomainBarChart barData={barData} />
+      </Box>
 
-        <div className="dashboard-card">
+      <Box>
+           <h2>Domain Frequency</h2>
           <DrilldownPieChart risksData={pieData}></DrilldownPieChart>
-          {/* <CausalDonutChart data={pieData} /> */}
-        </div>
-      </div>
+      </Box>
 
       {/* <div className="dashboard-row">
         <div className="dashboard-card large">
@@ -77,7 +95,7 @@ const Dashboard = ({ loading, heatmapData, domainData, subdomainData }) => {
           <SubdomainTreemap data={subdomainData} />
         </div>
       </div> */}
-    </div>
+    </Container>
   );
 };
 

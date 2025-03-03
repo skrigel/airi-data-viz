@@ -10,7 +10,7 @@ import { List } from "@mui/material";
 const valueFormatter = (value) => `${value}`;
 
 // 🔹 Process API data into a domain → subdomains mapping
-const processData = (data) => {
+const getDomainToSublabelMap = (data) => {
   const domainMap = {};
 
   data.forEach(({ label, subdomain, value }) => {
@@ -30,11 +30,13 @@ const processData = (data) => {
   return domainMap;
 };
 
+
 export default function DrilldownPieChart({ risksData }) {
   const [currentDomain, setCurrentDomain] = useState(null);
 
   // Convert flat risksData into a structured domain-to-subdomain map
-  const domainMap = processData(risksData);
+  console.log("Risks", risksData)
+  const domainMap = getDomainToSublabelMap(risksData);
   console.log(domainMap);
   // 🔹 Aggregate domain values
   const domainSeries = Object.keys(domainMap).map((domain) => ({
@@ -56,10 +58,9 @@ export default function DrilldownPieChart({ risksData }) {
   return (
     <Stack
       direction={{ xs: "column", md: "row" }}
-      spacing={{ xs: 0, md: 4 }}
+      spacing={{ xs: 0, md: 2 }}
       sx={{ width: "100%" }}
     >
-      <Box sx={{ flexGrow: 1 }}>
         <PieChart
           series={[
             {
@@ -79,13 +80,12 @@ export default function DrilldownPieChart({ risksData }) {
               setCurrentDomain(item.label);
             }
           }}
+          
         />
-      </Box>
-
-      <Stack direction="column" sx={{ width: { xs: "100%", md: "40%" } }}>
-        <Box
+         <Box
           sx={{
             // display: "flex",
+            width: 400,
             justifyContent: "space-between",
             alignItems: "center",
           }}
@@ -96,19 +96,18 @@ export default function DrilldownPieChart({ risksData }) {
               : "Click a domain"}
           </Typography>
 
-          {currentDomain && (
-            <>
-              <Box sx={{ mt: 2 }}>
-                <ul>
-                  {Object.keys(domainMap[currentDomain]).map((subdomain) => (
-                    <li key={subdomain}>
-                      {subdomain}: {domainMap[currentDomain][subdomain]}
-                    </li>
-                  ))}
-                </ul>
-              </Box>
-            </>
-          )}
+        
+          <Box sx={{ visibility: currentDomain ? "visible" : "hidden", mt: 2 }}>
+  {currentDomain &&
+    Object.keys(domainMap[currentDomain]).map((subdomain) => (
+      <Box key={subdomain} sx={{ mb: 1 }}>
+        <Typography variant="body2">
+          <strong>{subdomain}</strong>: {domainMap[currentDomain][subdomain]}
+        </Typography>
+      </Box>
+    ))}
+</Box>
+
 
           {currentDomain && (
             <IconButton
@@ -120,7 +119,6 @@ export default function DrilldownPieChart({ risksData }) {
             </IconButton>
           )}
         </Box>
-      </Stack>
     </Stack>
   );
 }
